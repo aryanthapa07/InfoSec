@@ -54,7 +54,7 @@ module.exports = {
       options: [
         "P@ssw0rd!",
         "12345678",
-        "CorrectHorseBatteryStaple",
+        "7HtXTYuuveteR!if",
         "July2024!"
       ],
       answer: 2
