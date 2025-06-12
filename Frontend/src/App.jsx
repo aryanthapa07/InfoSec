@@ -8,8 +8,6 @@ import PasswordGame from "./components/PasswordGame";
 import Tips from "./components/Tips";
 import ProgressTracker from "./components/ProgressTracker";
 import PrankProvider from "./components/pranks/PrankProvider";
-import LoginPage from "./components/pranks/DataLeakPrank";
-import SignupPrank from "./components/pranks/SignupPrank";
 
 export default function App() {
   return (
@@ -24,8 +22,6 @@ export default function App() {
             <Route path="/simulation/phishing" element={<PhishingSimulation />} />
             <Route path="/simulation/password" element={<PasswordGame />} />
             <Route path="/tips" element={<Tips />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPrank />} />
           </Routes>
           <ProgressTracker />
         </div>

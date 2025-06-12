@@ -36,8 +36,6 @@ export default function Navbar() {
             <Item to="/simulation/phishing" label="Phishing Sim" />
             <Item to="/simulation/password" label="Password Game" />
             <Item to="/tips" label="Tips" />
-            <Item to="/login" label="Login" />
-            <Item to="/signup" label="Signup" />
           </div>
 
           {/* Mobile menu button */}
@@ -82,8 +80,6 @@ export default function Navbar() {
             <Item to="/simulation/phishing" label="Phishing Sim" onClick={() => setIsMenuOpen(false)} />
             <Item to="/simulation/password" label="Password Game" onClick={() => setIsMenuOpen(false)} />
             <Item to="/tips" label="Tips" onClick={() => setIsMenuOpen(false)} />
-            <Item to="/login" label="Login" onClick={() => setIsMenuOpen(false)} />
-            <Item to="/signup" label="Signup" onClick={() => setIsMenuOpen(false)} />
           </div>
         </div>
       )}
