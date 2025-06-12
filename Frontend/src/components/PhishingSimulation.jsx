@@ -35,7 +35,7 @@ export default function PhishingSimulation() {
 
   useEffect(() => {
     setLoading(true);
-    fetch("http://localhost:4000/api/sim/phishing")
+    fetch("https://infosec-h4db.onrender.com/api/sim/phishing")
       .then(r => r.json())
       .then(data => {
         setScenarios(data.scenarios);

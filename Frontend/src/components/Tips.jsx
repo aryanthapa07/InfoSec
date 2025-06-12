@@ -29,7 +29,7 @@ export default function Tips() {
 
   useEffect(() => {
     setLoading(true);
-    fetch("http://localhost:4000/api/tips")
+    fetch("https://infosec-h4db.onrender.com/api/tips")
       .then(r => r.json())
       .then(res => {
         setTips(res);

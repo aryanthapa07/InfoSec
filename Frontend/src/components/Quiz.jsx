@@ -30,7 +30,7 @@ export default function Quiz() {
   useEffect(() => {
     if (topic) {
       setLoading(true);
-      fetch(`http://localhost:4000/api/quiz/${topic}`)
+      fetch(`https://infosec-h4db.onrender.com/api/quiz/${topic}`)
         .then((r) => r.json())
         .then((data) => {
           setQuestions(data);
@@ -45,7 +45,7 @@ export default function Quiz() {
       id: q.id,
       selectedIdx: answers[q.id],
     }));
-    fetch(`http://localhost:4000/api/quiz/${topic}/submit`, {
+    fetch(`https://infosec-h4db.onrender.com/api/quiz/${topic}/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ answers: payload }),
