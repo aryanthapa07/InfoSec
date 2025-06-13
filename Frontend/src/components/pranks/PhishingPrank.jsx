@@ -1,13 +1,23 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import catVideo from "../../assets/cat.mp4"; // Assuming you have a cat_video.mp4 in src/assets
 
 export default function PhishingPrank({ enabled = false, onTrigger }) {
-  const [open, setOpen] = useState(enabled);
+  const [open, setOpen] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const navigate = useNavigate();
   const videoRef = useRef(null);
+
+  useEffect(() => {
+    if (enabled) {
+      const hasBeenShown = localStorage.getItem("phishingPrankShown");
+      if (!hasBeenShown) {
+        setOpen(true);
+        localStorage.setItem("phishingPrankShown", "true");
+      }
+    }
+  }, [enabled]);
 
   if (!enabled || !open) return null;
 
