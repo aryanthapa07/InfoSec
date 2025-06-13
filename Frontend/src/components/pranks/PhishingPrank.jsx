@@ -23,19 +23,19 @@ export default function PhishingPrank({ enabled = false, onTrigger }) {
 
   const handleClick = () => {
     setShowVideo(true);
-    setRevealed(true); // To show the educational message
+    setRevealed(true);
     if (onTrigger) onTrigger("phishing");
   };
 
   const handleVideoEnd = () => {
-    setOpen(false); // Close the modal
+    setOpen(false);
     setShowVideo(false);
-    navigate("/"); // Navigate to the landing page
+    navigate("/");
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4">
+      <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 md:p-8 max-w-md w-full relative max-h-[calc(100vh-2rem)] overflow-y-auto">
         {!showVideo ? (
           <>
             <h2 className="text-xl font-bold mb-2 text-indigo-700">Quick Security Check</h2>
@@ -53,18 +53,19 @@ export default function PhishingPrank({ enabled = false, onTrigger }) {
         ) : (
           <>
             <h2 className="text-xl font-bold mb-2 text-red-700">Haha! You clicked an unverified link!</h2>
-            <video
-              ref={videoRef}
-              src={catVideo}
-              onEnded={handleVideoEnd}
-              autoPlay
-              controls
-              className="w-full rounded-lg mb-4"
-            />
+            <div className="relative w-full pt-[56.25%] mb-4"> {/* Responsive video container */}
+              <video
+                ref={videoRef}
+                src={catVideo}
+                onEnded={handleVideoEnd}
+                autoPlay
+                controls
+                className="absolute inset-0 w-full h-full rounded-lg"
+              />
+            </div>
             <p className="mb-4 text-gray-700">
               This was a prank to teach you about clicking unknown links. Always verify the source and URL before clicking!
             </p>
-            {/* No close button here, as it navigates automatically */}
           </>
         )}
       </div>
