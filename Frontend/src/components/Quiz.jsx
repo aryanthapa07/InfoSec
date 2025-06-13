@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { ProgressContext } from "../context/ProgressContext";
-import DownloadPrankButton from "./pranks/DownloadPrank";
+import QuizDownloadPrank from "./pranks/QuizDownloadPrank";
 
 const topics = [
   { key: "phishing", label: "Phishing", icon: "🔍" },
@@ -151,7 +151,7 @@ export default function Quiz() {
             </div>
           </div>
           <div className="mb-8 flex flex-col gap-4 items-center">
-            <DownloadPrankButton />
+            <QuizDownloadPrank />
             <button
               onClick={() => setShowResultModal(true)}
               className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 cursor-pointer mt-2"

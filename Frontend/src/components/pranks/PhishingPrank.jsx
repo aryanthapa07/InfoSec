@@ -35,7 +35,7 @@ export default function PhishingPrank({ enabled = false, onTrigger }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4">
-      <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 md:p-8 max-w-md w-full relative max-h-[calc(100vh-2rem)] overflow-y-auto">
+      <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 md:p-8 max-w-lg w-full relative max-h-[calc(100vh-2rem)] overflow-y-auto">
         {!showVideo ? (
           <>
             <h2 className="text-xl font-bold mb-2 text-indigo-700">Quick Security Check</h2>
