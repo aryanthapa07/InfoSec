@@ -1,278 +1,261 @@
-import { useEffect, useState, useContext } from "react";
-import { ProgressContext } from "../context/ProgressContext";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const redFlagCategories = {
-  urgency: { icon: "⏰", label: "Urgency", color: "red" },
-  authority: { icon: "👔", label: "Authority", color: "blue" },
-  reward: { icon: "🎁", label: "Reward", color: "green" },
-  threat: { icon: "⚠️", label: "Threat", color: "orange" },
-  request: { icon: "📝", label: "Request", color: "purple" },
-  trust: { icon: "🤝", label: "Trust", color: "indigo" },
-  grammar: { icon: "📚", label: "Grammar", color: "yellow" },
-};
+const scenarios = [
+  {
+    email: `Dear Valued Customer,
 
-const colorClasses = {
-  red: "bg-red-600 hover:bg-red-700",
-  blue: "bg-blue-600 hover:bg-blue-700",
-  green: "bg-green-600 hover:bg-green-700",
-  orange: "bg-orange-600 hover:bg-orange-700",
-  purple: "bg-purple-600 hover:bg-purple-700",
-  indigo: "bg-indigo-600 hover:bg-indigo-700",
-  yellow: "bg-yellow-600 hover:bg-yellow-700",
-};
+We have noticed unusual activity on your account. To ensure your account security, please verify your details by clicking the link below:
 
-export default function PhishingSimulation() {
-  const { markComplete } = useContext(ProgressContext);
-  const [scenarios, setScenarios] = useState([]);
-  const [currentScenario, setCurrentScenario] = useState(null);
+http://secure-verify-account.com
+
+If you do not take action within 24 hours, your account will be suspended.
+
+Best regards,
+Your Bank Security Team`,
+    options: [
+      { id: "urgency", label: "Creates urgency (e.g., '24 hours', 'suspended')", correct: true, explanation: "Phishing emails often create a sense of urgency to trick you into acting quickly without thinking." },
+      { id: "unknownLink", label: "Contains an unknown or suspicious link", correct: true, explanation: "Links to unfamiliar websites can lead to phishing sites that steal your information." },
+      { id: "personalInfo", label: "Asks for personal or account information", correct: true, explanation: "Legitimate companies rarely ask for sensitive info via email." },
+      { id: "genericGreeting", label: "Uses a generic greeting like 'Dear Valued Customer'", correct: true, explanation: "Phishing emails often use generic greetings instead of your real name." },
+      { id: "unusualActivity", label: "Mentions 'unusual activity' without specific details", correct: true, explanation: "Vague warnings about 'unusual activity' are a common scare tactic." },
+      { id: "professionalSignature", label: "Has a professional signature block", correct: false, explanation: "A professional signature is common in legitimate emails." },
+      { id: "noSpellingErrors", label: "No spelling or grammar errors", correct: false, explanation: "Absence of errors is not a red flag." }
+    ]
+  },
+  {
+    email: `Hi Alex,
+
+Just a quick note to let you know your package has shipped! You can track your order here:
+
+https://www.legit-shipping.com/track/12345
+
+Thank you for shopping with us!
+
+Best,
+Customer Service Team`,
+    options: [
+      { id: "personalGreeting", label: "Uses your real name ('Hi Alex')", correct: false, explanation: "Personalized greetings are a good sign." },
+      { id: "trackingLink", label: "Provides a tracking link", correct: false, explanation: "Tracking links are normal in shipping notifications. Always check the URL, but this alone is not suspicious." },
+      { id: "noUrgency", label: "No urgent language", correct: false, explanation: "Lack of urgency is typical for legitimate emails." },
+      { id: "noRequestInfo", label: "Does not ask for personal information", correct: false, explanation: "Legitimate companies rarely ask for sensitive info via email." },
+      { id: "genericSignature", label: "Uses a generic signature ('Customer Service Team')", correct: false, explanation: "Generic signatures are common in automated emails." },
+      { id: "suspiciousLink", label: "Link goes to an unknown website", correct: true, explanation: "Always check the actual URL. If it's unfamiliar, it could be a phishing attempt." },
+      { id: "unexpectedEmail", label: "You weren't expecting a package", correct: true, explanation: "Unexpected emails about orders or shipments can be phishing attempts." }
+    ]
+  },
+  {
+    email: `Dear Employee,
+
+As part of our annual security training, please complete the attached survey by the end of the week. If you have any questions, contact HR at hr@company.com.
+
+Thank you,
+HR Department`,
+    options: [
+      { id: "attachment", label: "Contains an attachment", correct: true, explanation: "Attachments can contain malware. Only open if you trust the sender and expect the file." },
+      { id: "legitContact", label: "Provides a legitimate company contact email", correct: false, explanation: "A real company contact is a good sign." },
+      { id: "noThreats", label: "No threats or urgent language", correct: false, explanation: "Lack of threats is typical for legitimate emails." },
+      { id: "fromHR", label: "Comes from HR Department", correct: false, explanation: "HR often sends legitimate emails." },
+      { id: "surveyRequest", label: "Requests you to complete a survey", correct: false, explanation: "Survey requests are common in companies." },
+      { id: "deadline", label: "Mentions a deadline ('end of the week')", correct: true, explanation: "Deadlines can be used to create urgency, but are not always suspicious. Consider context." }
+    ]
+  }
+];
+
+export default function EmailSafetyChallenge() {
+  const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState([]);
-  const [done, setDone] = useState(false);
-  const [showExplanation, setShowExplanation] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [score, setScore] = useState(0);
-  const [showHint, setShowHint] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [showResult, setShowResult] = useState(false);
+  const [results, setResults] = useState([]);
+  const [showSummary, setShowSummary] = useState(false);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    setLoading(true);
-    fetch("https://infosec-h4db.onrender.com/api/sim/phishing")
-      .then(r => r.json())
-      .then(data => {
-        setScenarios(data.scenarios);
-        setCurrentScenario(data.scenarios[0]);
-        setLoading(false);
-      });
-  }, []);
+  const scenario = scenarios[current];
 
-  const toggle = word => {
-    if (done) return;
-    setSelected(prev =>
-      prev.includes(word) ? prev.filter(w => w !== word) : [...prev, word]
+  const handleToggle = (id) => {
+    setSelected((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
   };
 
-  const check = () => {
-    setDone(true);
-    const correctFlags = selected.filter(w => currentScenario.flags.includes(w));
-    const newScore = Math.round((correctFlags.length / currentScenario.flags.length) * 100);
-    setScore(newScore);
-    
-    if (newScore >= 80) {
-      setShowSuccess(true);
-    markComplete("phishing");
+  const handleAnalyze = () => {
+    setShowResult(true);
+  };
+
+  const handleNext = () => {
+    setResults((prev) => [
+      ...prev,
+      {
+        selected,
+        scenarioIdx: current
+      }
+    ]);
+    setSelected([]);
+    setShowResult(false);
+    if (current < scenarios.length - 1) {
+      setCurrent(current + 1);
+    } else {
+      setShowSummary(true);
     }
   };
 
-  const nextScenario = () => {
-    const currentIndex = scenarios.findIndex(s => s.id === currentScenario.id);
-    const nextIndex = (currentIndex + 1) % scenarios.length;
-    setCurrentScenario(scenarios[nextIndex]);
+  const handleReset = () => {
     setSelected([]);
-    setDone(false);
-    setShowExplanation(false);
-    setShowHint(false);
-    setShowSuccess(false);
+    setShowResult(false);
   };
 
-  if (loading) {
+  const handleContinue = () => {
+    navigate("/simulation/password");
+  };
+
+  if (showSummary) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <h2 className="text-xl font-bold text-blue-800 mb-2">Email Safety Challenge - Summary</h2>
+          <p className="text-blue-700 mb-4">
+            Here's how you did on each scenario. Review the explanations to reinforce your learning!
+          </p>
+        </div>
+        {results.map((res, idx) => {
+          const sc = scenarios[res.scenarioIdx];
+          return (
+            <div key={idx} className="bg-white p-6 rounded-lg shadow-md mb-6">
+              <h3 className="text-lg font-semibold mb-4">Scenario {idx + 1}</h3>
+              <div className="whitespace-pre-wrap font-mono text-gray-800 mb-4">{sc.email}</div>
+              <div className="mb-2 font-semibold">Your Answers:</div>
+              <div className="mb-4 space-y-2">
+                {sc.options.map((opt) => {
+                  const wasSelected = res.selected.includes(opt.id);
+                  const isCorrect = opt.correct;
+                  let bgColorClass = "bg-gray-100";
+                  let textColorClass = "text-gray-700";
+                  let icon = "•";
+
+                  if (wasSelected && isCorrect) {
+                    bgColorClass = "bg-green-100";
+                    textColorClass = "text-green-700";
+                    icon = "✓";
+                  } else if (wasSelected && !isCorrect) {
+                    bgColorClass = "bg-red-100";
+                    textColorClass = "text-red-700";
+                    icon = "✗";
+                  } else if (!wasSelected && isCorrect) {
+                    bgColorClass = "bg-yellow-100";
+                    textColorClass = "text-yellow-700";
+                    icon = "!";
+                  }
+
+                  return (
+                    <div key={opt.id} className={`p-3 rounded-lg ${bgColorClass}`}>
+                      <div className="flex items-start gap-2">
+                        <span className={`font-bold ${textColorClass}`}>{icon}</span>
+                        <span className={`font-semibold ${textColorClass}`}>{opt.label}</span>
+                      </div>
+                      <p className={`ml-6 text-sm ${textColorClass}`}>{opt.explanation}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+        <button
+          onClick={handleContinue}
+          className="mt-4 bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
+        >
+          Continue to Password Game
+        </button>
       </div>
     );
   }
 
-  if (!currentScenario) return null;
-
-  const words = currentScenario.body.split(/\s+/);
-  const correctFlags = selected.filter(w => currentScenario.flags.includes(w));
-  const incorrectFlags = selected.filter(w => !currentScenario.flags.includes(w));
-  const missedFlags = currentScenario.flags.filter(w => !selected.includes(w));
-
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-indigo-700 mb-4">Phishing Detection Challenge</h2>
-        <p className="text-gray-600">
-          Read the {currentScenario.type} below and identify potential phishing red flags. Click on suspicious words or phrases.
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <h2 className="text-xl font-bold text-blue-800 mb-2">Email Safety Challenge</h2>
+        <p className="text-blue-700">
+          <strong>Instructions:</strong> Read the email below and check the boxes for any suspicious elements you find. Then click "Analyze" to see if you're right!
         </p>
       </div>
 
-      <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-        {currentScenario.type === "email" ? (
-          <>
-            <div className="border-b pb-4 mb-4">
-              <p className="text-gray-600"><span className="font-semibold">From:</span> {currentScenario.from}</p>
-              <p className="text-gray-600"><span className="font-semibold">Subject:</span> {currentScenario.subject}</p>
-            </div>
-          </>
-        ) : (
-          <div className="border-b pb-4 mb-4">
-            <p className="text-gray-600"><span className="font-semibold">Platform:</span> {currentScenario.platform}</p>
-            <p className="text-gray-600"><span className="font-semibold">From:</span> {currentScenario.sender}</p>
-          </div>
-        )}
-        
-        <div className="prose max-w-none">
-        {words.map((w, i) => (
-          <span
-            key={i}
-              className={`cursor-pointer transition-colors ${
-                selected.includes(w)
-                  ? currentScenario.flags.includes(w)
-                    ? "bg-yellow-200"
-                    : "bg-red-200"
-                  : ""
-            }`}
-            onClick={() => toggle(w)}
-          >
-            {w}{" "}
-          </span>
-        ))}
+      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+        <h3 className="text-lg font-semibold mb-4">Scenario {current + 1} of {scenarios.length}</h3>
+        <div className="whitespace-pre-wrap font-mono text-gray-800 mb-4">
+          {scenario.email}
         </div>
-      </div>
-
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex gap-4">
-          {Object.entries(redFlagCategories).map(([key, { icon, label, color }]) => (
-            <div key={key} className="flex items-center gap-2 text-sm text-gray-600">
-              <span>{icon}</span>
-              <span>{label}</span>
-            </div>
+        <div className="space-y-2">
+          {scenario.options.map((element) => (
+            <label key={element.id} className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={selected.includes(element.id)}
+                onChange={() => handleToggle(element.id)}
+                className="form-checkbox h-5 w-5 text-indigo-600"
+              />
+              <span>{element.label}</span>
+            </label>
           ))}
         </div>
-        <div className="flex gap-4">
-          <button
-            onClick={() => setShowHint(!showHint)}
-            className="px-4 py-2 text-indigo-600 hover:text-indigo-700"
-          >
-            {showHint ? "Hide Hint" : "Show Hint"}
-          </button>
-      <button
-            className={`px-6 py-2 rounded-lg transition-colors ${
-              done
-                ? "bg-green-600 text-white"
-                : "bg-indigo-600 text-white hover:bg-indigo-700"
-            }`}
-        onClick={check}
-            disabled={done}
-      >
-            {done ? "Analysis Complete ✓" : "Analyze Message"}
-          </button>
-        </div>
       </div>
 
-      {showHint && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-          <h3 className="font-medium text-yellow-800 mb-2">💡 Hint</h3>
-          <p className="text-yellow-700">
-            Look for signs of urgency, threats, or requests for personal information.
-            Check the sender's email address and any links carefully.
-          </p>
-        </div>
-      )}
+      <div className="flex justify-center space-x-4 mb-6">
+        <button
+          onClick={handleAnalyze}
+          className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700"
+        >
+          Analyze
+        </button>
+        <button
+          onClick={handleReset}
+          className="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600"
+        >
+          Reset
+        </button>
+      </div>
 
-      {showSuccess && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-          <h3 className="font-medium text-green-800 mb-2">🎉 Great job!</h3>
-          <p className="text-green-700">
-            You've successfully identified the phishing attempts! Would you like to try another scenario?
-          </p>
-          <button
-            onClick={nextScenario}
-            className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-          >
-            Try Another Scenario
-          </button>
-        </div>
-      )}
+      {showResult && (
+        <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+          <h3 className="text-lg font-semibold mb-4">Analysis Result:</h3>
+          <div className="mb-4 space-y-2">
+            {scenario.options.map((opt) => {
+              const wasSelected = selected.includes(opt.id);
+              const isCorrect = opt.correct;
+              let bgColorClass = "bg-gray-100";
+              let textColorClass = "text-gray-700";
+              let icon = "•";
 
-      {done && !showSuccess && (
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Analysis Results</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h4 className="font-medium text-gray-700 mb-2">
-                Correctly Identified ({correctFlags.length}/{currentScenario.flags.length})
-              </h4>
-              <div className="space-y-2">
-                {correctFlags.map((flag, index) => (
-                  <div key={index} className="flex items-center gap-2 text-green-600">
-                    <span>✓</span>
-                    <span>{flag}</span>
-                    <span className="text-xs text-gray-500">
-                      ({redFlagCategories[currentScenario.flagCategories[flag]]?.label})
-                    </span>
+              if (wasSelected && isCorrect) {
+                bgColorClass = "bg-green-100";
+                textColorClass = "text-green-700";
+                icon = "✓";
+              } else if (wasSelected && !isCorrect) {
+                bgColorClass = "bg-red-100";
+                textColorClass = "text-red-700";
+                icon = "✗";
+              } else if (!wasSelected && isCorrect) {
+                bgColorClass = "bg-yellow-100";
+                textColorClass = "text-yellow-700";
+                icon = "!";
+              }
+
+              return (
+                <div key={opt.id} className={`p-3 rounded-lg ${bgColorClass}`}>
+                  <div className="flex items-start gap-2">
+                    <span className={`font-bold ${textColorClass}`}>{icon}</span>
+                    <span className={`font-semibold ${textColorClass}`}>{opt.label}</span>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h4 className="font-medium text-gray-700 mb-2">Missed Red Flags</h4>
-              <div className="space-y-2">
-                {missedFlags.map((flag, index) => (
-                  <div key={index} className="flex items-center gap-2 text-red-600">
-                    <span>✗</span>
-                    <span>{flag}</span>
-                    <span className="text-xs text-gray-500">
-                      ({redFlagCategories[currentScenario.flagCategories[flag]]?.label})
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {incorrectFlags.length > 0 && (
-            <div className="mt-6">
-              <h4 className="font-medium text-gray-700 mb-2">Incorrectly Identified</h4>
-              <div className="space-y-2">
-                {incorrectFlags.map((flag, index) => (
-                  <div key={index} className="flex items-center gap-2 text-orange-600">
-                    <span>!</span>
-                    <span>{flag}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="mt-6">
-            <button
-              onClick={() => setShowExplanation(!showExplanation)}
-              className="text-indigo-600 hover:text-indigo-700 font-medium"
-            >
-              {showExplanation ? "Hide" : "Show"} Detailed Explanation
-      </button>
-
-            {showExplanation && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-medium text-gray-800 mb-2">Why These Are Red Flags:</h4>
-                <div className="space-y-4">
-                  {currentScenario.flags.map((flag, index) => (
-                    <div key={index} className="text-gray-600">
-                      <p className="font-medium text-gray-700">{flag}</p>
-                      <p className="text-sm">{currentScenario.explanations[flag]}</p>
-                    </div>
-                  ))}
+                  <p className={`ml-6 text-sm ${textColorClass}`}>{opt.explanation}</p>
                 </div>
-              </div>
-            )}
+              );
+            })}
           </div>
-
-          <div className="mt-6 flex justify-between items-center">
-            <div className="text-lg font-medium">
-              Score: <span className="text-indigo-600">{score}%</span>
-            </div>
-            <button
-              onClick={nextScenario}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-            >
-              Try Another Scenario
-            </button>
-          </div>
+          <button
+            onClick={handleNext}
+            className="mt-4 bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
+          >
+            {current < scenarios.length - 1 ? "Next Question" : "See Results"}
+          </button>
         </div>
       )}
     </div>
