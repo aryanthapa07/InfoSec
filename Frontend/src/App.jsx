@@ -8,7 +8,7 @@ import PasswordGame from "./components/PasswordGame";
 import Tips from "./components/Tips";
 import ProgressTracker from "./components/ProgressTracker";
 import PrankProvider from "./components/pranks/PrankProvider";
-import Footer from "./components/Footer";
+// import Footer from "./components/Footer";
 
 export default function App() {
   return (
@@ -26,7 +26,7 @@ export default function App() {
           </Routes>
           <ProgressTracker />
         </div>
-        <Footer />
+        {/* <Footer /> */}
       </div>
     </ProgressProvider>
   );
