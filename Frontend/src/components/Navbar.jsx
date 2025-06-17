@@ -80,7 +80,7 @@ export default function Navbar() {
           <ul className="flex flex-col mt-4 font-medium md:flex-row md:space-x-8 md:mt-0">
             <Item to="/" label="Home" />
             <Item to="/quiz" label="Quiz" />
-            <Item to="/simulation/phishing" label="Phishing Sim" />
+            <Item to="/simulation/phishing" label="Phishing Simulation" />
             <Item to="/simulation/password" label="Password Game" />
             <Item to="/tips" label="Tips" />
           </ul>
@@ -105,7 +105,7 @@ export default function Navbar() {
               <ul className="flex flex-col space-y-4">
                 <Item to="/" label="Home" onItemClick={closeMobileMenu} />
                 <Item to="/quiz" label="Quiz" onItemClick={closeMobileMenu} />
-                <Item to="/simulation/phishing" label="Phishing Sim" onItemClick={closeMobileMenu} />
+                <Item to="/simulation/phishing" label="Phishing Simulation" onItemClick={closeMobileMenu} />
                 <Item to="/simulation/password" label="Password Game" onItemClick={closeMobileMenu} />
                 <Item to="/tips" label="Tips" onItemClick={closeMobileMenu} />
               </ul>

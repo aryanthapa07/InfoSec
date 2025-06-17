@@ -182,7 +182,7 @@ export default function Quiz() {
     );
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
+    <div className="max-w-full md:max-w-3xl lg:w-[800px] mx-auto px-4 py-8 min-h-[350px] md:min-h-[400px] lg:min-h-[500px]">
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-indigo-700 capitalize mb-2">
           {topic.replace(/([A-Z])/g, " $1")}
